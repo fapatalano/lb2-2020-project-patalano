@@ -16,7 +16,8 @@ def parse_pssm(pssm_file):
         for line in file:
             line=line.strip().split()
             if len(line)!=0 and line[0].isnumeric() :
-                print('\t'.join(line[:2])+'\t'+'\t'.join(normalize_values(line[22:-2]))+'\n')
+                print('\t'.join(line[1])+'\t'+'\t'.join(normalize_values(line[22:-2])))
+                # print(line[1])
 
 
 
