@@ -12,7 +12,7 @@ from thundersvm import SVC
 import joblib
 
 
-class svc(): 
+class svc():
     def __init__(self, training_path, test_path, dssp_path, cv_path, output_path):
         self.w = 17
         self.class_code = {'H': 1, 'E': 2, 'C': 3, '-': 3}
@@ -25,9 +25,11 @@ class svc():
         self.cv_set = svc.get_k_fold_ids(cv_path, self.training_id)
         self.X_train, self.y_train = svc.encode(
             self, self.training_id, self.training_path, self.cv_path)
-        best_params = svc.grid_search(self)
-        self.c = best_params['C']
-        self.gamma = best_params['gamma']
+        performance = svc.grid_search(self)
+        classification_report = prediction[0]
+        mcc = prediction[1]
+        q3_score = prediction[2]
+        print(classification_report, mcc, q3_score)
 
     @staticmethod
     def extract_id(path):
@@ -131,23 +133,28 @@ class svc():
                            n_jobs=1,
                            return_train_score=True,
                            ).fit(self.X_train, self.y_train)
-        best = clf.best_estimator
-        test_ids = svc.extract_id(test_path)
-        X_test, y_test = svc.encode(self, test_ids, test_path)
-        y_true = svc.get_y_true(self.dssp_path, test_ids)
-        y_pred = best.predict(X_test)
-        class_report = classification_report(y_true, y_pred,
+        if self.output_path:
+            joblib.dumb(clf.cv_results_, os.path.join(self.output_path, 'cv_results.joblib')
+            joblib.dumb(clf.best_estimator_, os.path.join(self.output_path, 'best_estimator.joblib')
+            joblib.dumb(clf.best_score_, os.path.join(self.output_path, 'best_score.joblib')
+
+        best=clf.best_estimator_
+        test_ids=svc.extract_id(test_path)
+        X_test, y_test=svc.encode(self, test_ids, test_path)
+        y_true=svc.get_y_true(self.dssp_path, test_ids)
+        y_pred=best.predict(X_test)
+        class_report=classification_report(y_true, y_pred,
                                              target_names=['H', 'E', 'C'],
                                              output_dict=True)
-        mcc = svc.get_mcc(y_pred, y_true, True)
+        mcc=svc.get_mcc(y_pred, y_true, True)
         # multiclass_conf_mat = multilabel_confusion_matrix(y_true,y_pred, labels=[1,2,3])
-        q3_score = accuracy_score(y_true, y_pred)
+        q3_score=accuracy_score(y_true, y_pred)
         return class_report, mcc, q3_score
 
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser()
+    parser=argparse.ArgumentParser()
     parser.add_argument("training", action='store',
                         help="path to the training profile directory")
     parser.add_argument("dssp", action='store',
@@ -158,6 +165,6 @@ if __name__ == '__main__':
                         help="path to the cv set directory")
     parser.add_argument("--o", action='store', default=None,
                         help="path to the output path")
-    args = parser.parse_args()
+    args=parser.parse_args()
     print(args)
-    SVM = svc(args.training, args.testing, args.dssp, args.cv, args.o)
+    SVM=svc(args.training, args.testing, args.dssp, args.cv, args.o)
