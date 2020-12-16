@@ -12,7 +12,7 @@ from thundersvm import SVC
 import joblib
 
 
-class svc():
+class svc(): 
     def __init__(self, training_path, test_path, dssp_path, cv_path, output_path):
         self.w = 17
         self.class_code = {'H': 1, 'E': 2, 'C': 3, '-': 3}
